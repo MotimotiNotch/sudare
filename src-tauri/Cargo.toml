@@ -1,0 +1,35 @@
+[package]
+name = "sudare"
+version = "0.1.0"
+description = "顔のモザイクを、現像のように確かめて直す"
+authors = ["nocchi"]
+license = "MIT"
+edition = "2021"
+rust-version = "1.98"
+
+[lib]
+name = "sudare_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7.1", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "2.12.1", features = [] }
+tauri-plugin-dialog = "2.8.1"
+# 検出: YuNet（opencv_zoo）を純 Rust の推論器で動かす。onnxruntime のバイナリを落とさずに済む。
+tract-onnx = "0.21"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+# EXIF は読むだけ kamadak-exif、書くのは許可リストの項目だけを組み直す（GPS・縮小画像を構造的に持ち込まない）
+kamadak-exif = "0.6"
+img-parts = "0.3"
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+tauri-plugin-opener = "2.7.0"
+
+[profile.dev.package."*"]
+# 検出と JPEG の復号は最適化なしだと数十倍遅い。依存だけは開発時も最適化する
+opt-level = 3
+

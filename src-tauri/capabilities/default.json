@@ -1,0 +1,20 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "メインの窓に渡す権限。フォルダを選ぶダイアログと、Ko-fi のページを既定のブラウザで開くことだけ",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://ko-fi.com/motimotinotch"
+        }
+      ]
+    }
+  ]
+}

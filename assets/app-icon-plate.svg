@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" role="img" aria-label="Sudare">
+  <rect x="0" y="0" width="64" height="64" rx="13.5" fill="#f5f3ef"/>
+  <path d="M 32 10 A 22 22 0 0 0 32 54 Z" fill="#6e9ecf" fill-opacity="0.55"/>
+  <path d="M 32 10 A 22 22 0 0 0 32 54" stroke="#6e9ecf" stroke-width="2.8" stroke-linecap="round"/>
+  <g>
+    <rect x="32.45" y="10.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.72"/>
+    <rect x="32.45" y="15.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.68"/>
+    <rect x="32.45" y="21.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.52"/>
+    <rect x="32.45" y="26.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.75"/>
+    <rect x="32.45" y="32.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.32"/>
+    <rect x="32.45" y="37.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.37"/>
+    <rect x="32.45" y="43.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.53"/>
+    <rect x="32.45" y="48.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.87"/>
+    <rect x="37.95" y="10.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.35"/>
+    <rect x="37.95" y="15.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.42"/>
+    <rect x="37.95" y="21.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.55"/>
+    <rect x="37.95" y="26.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.81"/>
+    <rect x="37.95" y="32.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.91"/>
+    <rect x="37.95" y="37.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.37"/>
+    <rect x="37.95" y="43.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.42"/>
+    <rect x="37.95" y="48.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.57"/>
+    <rect x="43.45" y="15.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.95"/>
+    <rect x="43.45" y="21.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.77"/>
+    <rect x="43.45" y="26.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.85"/>
+    <rect x="43.45" y="32.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.4"/>
+    <rect x="43.45" y="37.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.5"/>
+    <rect x="43.45" y="43.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.72"/>
+    <rect x="48.95" y="21.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.41"/>
+    <rect x="48.95" y="26.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.85"/>
+    <rect x="48.95" y="32.45" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.69"/>
+    <rect x="48.95" y="37.95" width="4.6" height="4.6" fill="#6e9ecf" fill-opacity="0.93"/>
+  </g>
+</svg>

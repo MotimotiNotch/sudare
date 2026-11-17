@@ -1,0 +1,27 @@
+{
+  "name": "sudare",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "顔のモザイクを、現像のように確かめて直す",
+  "license": "MIT",
+  "scripts": {
+    "build:web": "bun run scripts/build-web.ts",
+    "tauri": "tauri",
+    "typecheck": "tsc --noEmit",
+    "licenses": "bun run scripts/gen-licenses.ts",
+    "release": "bun run scripts/release.ts"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.1",
+    "@tauri-apps/plugin-dialog": "^2.8.1",
+    "@tauri-apps/plugin-opener": "^2.7.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.1",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

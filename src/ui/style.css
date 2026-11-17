@@ -1,0 +1,130 @@
+/*
+ * 使う道具の声: 動きなし・全部不透明・システムフォント 14px。
+ * 主役は写真と枠。有彩色は枠の2色だけ:
+ *   検出した枠（かかっている） 赤   --on      相対輝度 0.26
+ *   手で足した枠（かかっている） 琥珀 --added   相対輝度 0.54
+ *   外した枠                   灰の破線 --off  相対輝度 0.26（赤と明るさが近いので、破線という形で分ける）
+ * 背景は写真の色を偏らせない無彩色の暗い灰。
+ */
+:root {
+  --bg: #1c1c1c;
+  --bg-panel: #242424;
+  --bg-raised: #2e2e2e;
+  --line: #3a3a3a;
+  --fg: #e6e6e6;
+  --fg-muted: #9a9a9a;
+  --fg-faint: #6a6a6a;
+  --on: #ff453a;
+  --added: #ffb340;
+  --off: #8c8c8c;
+  --radius: 8px;
+  --radius-sm: 4px; /* 札・切り抜き・サムネイルなど小さい部品 */
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.5 system-ui, "Segoe UI", "Yu Gothic UI", sans-serif;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: auto 1fr 168px;
+  grid-template-areas: "bar bar" "stage side" "strip strip";
+  user-select: none;
+}
+
+button { font: inherit; color: inherit; background: var(--bg-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 12px; cursor: pointer; }
+button:disabled { color: var(--fg-faint); cursor: default; }
+button.primary:not(:disabled) { background: var(--fg); color: var(--bg); border-color: var(--fg); font-weight: 600; }
+
+#bar { grid-area: bar; display: flex; gap: 12px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--bg-panel); }
+#folder { color: var(--fg-muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#status { margin-left: auto; color: var(--fg-muted); font-size: 13px; }
+#bar { position: relative; }
+/* 進み具合は棒の長さで見せる。動き（アニメーション）は付けない（使う道具の声） */
+#progress { position: absolute; left: 0; bottom: -1px; height: 2px; background: var(--fg); }
+#progress[hidden] { display: none; }
+/* 幕だけ半透明、文字の札は不透明 */
+#loading { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(28, 28, 28, 0.55); }
+#loading[hidden] { display: none; }
+#loading span { background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 16px; color: var(--fg); }
+/* フォルダを開いたあとの読み込み・確かめ・一括でかける間は、窓全体を覆う */
+#modal { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: rgba(28, 28, 28, 0.6); }
+#modal[hidden] { display: none; }
+#modal .card { background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; width: min(440px, 90vw); display: grid; gap: 12px; }
+#modal h2 { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.5; }
+#modal p { margin: 0; color: var(--fg-muted); font-size: 13px; line-height: 1.6; }
+#modal p[hidden], #modal .bar[hidden] { display: none; }
+#modal .bar { height: 6px; background: var(--line); border-radius: calc(var(--radius-sm) - 1px); overflow: hidden; }
+#modal .bar i { display: block; height: 100%; width: 0; background: var(--fg); }
+#modal .actions { display: flex; justify-content: flex-end; gap: 8px; }
+#modal .actions:empty { display: none; }
+.thumb.pending { cursor: pointer; }
+.thumb.pending img { opacity: 0.5; }
+.thumb.pending .ph { display: grid; place-items: center; color: var(--fg-faint); font-size: 12px; border: 1px dashed var(--line); border-radius: calc(var(--radius-sm) - 2px); }
+
+#stage { grid-area: stage; position: relative; overflow: hidden; }
+#view { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; }
+#empty { position: absolute; inset: 0; margin: auto; height: fit-content; max-width: 28em; text-align: center; color: var(--fg-muted); }
+
+#side { grid-area: side; border-left: 1px solid var(--line); background: var(--bg-panel); display: flex; flex-direction: column; min-height: 0; }
+#side .row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+#cells { flex: 1; accent-color: var(--fg); } /* 既定の青を出さない。有彩色は枠の2色だけ */
+#mode { display: flex; }
+#mode button { border-radius: 0; padding: 4px 14px; }
+#mode button:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+#mode button:last-child { border-radius: 0 var(--radius) var(--radius) 0; border-left: none; }
+#mode button[aria-checked="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); font-weight: 600; }
+
+#faces { flex: 1; overflow-y: auto; padding: 10px; }
+#faces .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+#faces details { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 8px; }
+#faces summary { cursor: pointer; color: var(--fg-muted); font-size: 13px; margin-bottom: 8px; }
+.face { position: relative; aspect-ratio: 1; border: 2px solid var(--on); border-radius: var(--radius-sm); overflow: hidden; cursor: pointer; background: var(--bg); }
+.face.added { border-color: var(--added); }
+.face.off { border: 2px dashed var(--off); }
+.face.off img { opacity: 0.45; }
+/* 候補は外した顔と同じ灰で、点線（外した＝破線と形で分ける） */
+.face.candidate.off { border-style: dotted; }
+#faces details .hint { margin: 0 0 8px; color: var(--fg-muted); font-size: 12px; }
+.face img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.face b { position: absolute; left: 0; top: 0; padding: 0 5px; font-size: 11px; font-weight: 600; background: var(--on); color: var(--bg); border-bottom-right-radius: var(--radius-sm); }
+.face.added b { background: var(--added); }
+.face.off b { background: var(--off); }
+
+#strip { grid-area: strip; border-top: 1px solid var(--line); background: var(--bg-panel); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 0 12px; min-width: 0; }
+#groups { display: flex; flex-direction: column; gap: 10px; }
+#tabs { display: flex; flex-direction: column; gap: 6px; }
+#pick { display: flex; gap: 4px; }
+#pick button { flex: 1; padding: 2px 6px; font-size: 12px; }
+#tabs button { text-align: left; min-width: 96px; }
+#tabs button span { color: var(--fg-muted); }
+#tabs button[aria-selected="true"] { border-color: var(--fg); }
+#thumbs { display: flex; gap: 8px; overflow-x: auto; height: 100%; align-items: center; padding: 8px 0; }
+.thumb { position: relative; flex: none; height: 128px; border: 2px solid transparent; border-radius: var(--radius-sm); cursor: pointer; background: var(--bg); }
+.thumb.current { border-color: var(--fg); }
+.thumb img { height: 100%; display: block; border-radius: calc(var(--radius-sm) - 2px); }
+.thumb .ph { width: 96px; height: 100%; }
+.thumb input { position: absolute; left: 4px; top: 4px; width: 16px; height: 16px; margin: 0; accent-color: var(--fg); }
+.thumb .done { position: absolute; left: 4px; bottom: 4px; padding: 0 5px; font-size: 11px; background: var(--bg-panel); color: var(--fg-muted); border-radius: var(--radius-sm); }
+.thumb .done.stale { color: var(--added); }
+#export { white-space: nowrap; }
+
+/* チュートリアル: 照らす穴の外だけ暗くする（幕は半透明、札は不透明。動きなし） */
+#tour { position: fixed; inset: 0; z-index: 20; }
+#tour .hole { position: fixed; border: 2px solid var(--fg); border-radius: var(--radius); box-shadow: 0 0 0 100vmax rgba(28, 28, 28, 0.7); pointer-events: none; }
+#tour .card { position: fixed; width: min(380px, 90vw); background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; display: grid; gap: 8px; }
+#tour .count { color: var(--fg-faint); font-size: 12px; }
+#tour h2 { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.5; }
+#tour .body p { margin: 0 0 6px; color: var(--fg-muted); font-size: 13px; line-height: 1.6; }
+#tour .actions { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+#tour .actions span { flex: 1; }
+#tour .skip { border-color: transparent; background: none; color: var(--fg-muted); padding-left: 0; }
+#tour .hole.none { left: 50% !important; top: 50% !important; width: 0 !important; height: 0 !important; border: none; }
+#tour .link { display: inline-block; margin-top: 2px; color: var(--fg); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+#tour .count[hidden], #tour .actions button[hidden] { display: none; }
+/* 照らす対象の無い窓（このツールについて）は文が長いので少し広く */
+#tour:has(.hole.none) .card { width: min(480px, 90vw); }
