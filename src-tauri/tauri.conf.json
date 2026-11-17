@@ -10,7 +10,7 @@
   },
   "app": {
     "windows": [
-      { "title": "Sudare", "width": 1440, "height": 920, "minWidth": 960, "minHeight": 640 }
+      { "title": "Sudare", "width": 1440, "height": 920, "minWidth": 960, "minHeight": 640, "theme": "Dark" }
     ],
     "security": {
       "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src ipc: http://ipc.localhost"

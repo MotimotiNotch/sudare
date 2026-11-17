@@ -7,6 +7,7 @@
  * 背景は写真の色を偏らせない無彩色の暗い灰。
  */
 :root {
+  color-scheme: dark;
   --bg: #1c1c1c;
   --bg-panel: #242424;
   --bg-raised: #2e2e2e;
