@@ -1,0 +1,54 @@
+name: CI
+
+# 型チェックとスモークテスト（src-tauri/tests/smoke.rs）。
+# 壊れて困るのは Rust 側（検出・書き出しの EXIF）なので、Sirube と違ってこちらも回す。
+# Tauri は Windows でしか配らないので、ランナーも Windows に揃える。
+# private の間は Windows のランナーが無料枠を 2 倍の速さで使うので、
+# 回すのは main への push と PR だけ（タグは release.yml が自分でテストする）。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+
+      # Rust の版は rust-toolchain.toml が決める（最初の cargo で rustup が入れる）
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      # generate_context! が frontendDist（dist/）を読むので、テストの前に作る
+      - name: Build web
+        run: bun run build:web
+
+      - name: Smoke test
+        run: bun run test

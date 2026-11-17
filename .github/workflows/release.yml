@@ -1,0 +1,107 @@
+name: Release
+
+# `v0.1.0` のようなタグの push で、インストーラ（NSIS）を作って GitHub Release に載せる。
+#
+#   1. package.json・Cargo.toml・tauri.conf.json の version を上げてコミット
+#   2. （任意）.github/release-notes/<タグ>.md に、使う人向けの変更点を書く
+#   3. git tag v0.1.0 && git push origin v0.1.0
+#
+# インストーラは `bun run release`（ライセンス表記の焼き直し＋手元のパスを消すビルド）で作る。
+# 手元で作るときと同じ入口を通すので、CI だけ別の作り方になることはない。
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # 変更点を前のタグとの差から作るので、履歴とタグを全部取る
+          fetch-depth: 0
+
+      - name: Check version matches the tag
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg=$(grep -m1 '"version"' package.json | sed -E 's/.*"([^"]+)",?$/\1/')
+          cargo=$(grep -m1 '^version' src-tauri/Cargo.toml | sed -E 's/.*"([^"]+)"/\1/')
+          tauri=$(grep -m1 '"version"' src-tauri/tauri.conf.json | sed -E 's/.*"([^"]+)",?$/\1/')
+          echo "tag=$tag package.json=$pkg Cargo.toml=$cargo tauri.conf.json=$tauri"
+          [ "$tag" = "$pkg" ] && [ "$tag" = "$cargo" ] && [ "$tag" = "$tauri" ] || { echo "::error::タグと version が揃っていない"; exit 1; }
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Smoke test
+        run: |
+          bun run build:web
+          bun run test
+
+      - name: Build installer
+        run: bun run release
+
+      - name: Collect installer
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          src="src-tauri/target/release/bundle/nsis/Sudare_${version}_x64-setup.exe"
+          [ -f "$src" ] || { ls src-tauri/target/release/bundle/nsis; echo "::error::$src が無い"; exit 1; }
+          mkdir -p out
+          cp "$src" "out/Sudare-${GITHUB_REF_NAME}-setup.exe"
+          (cd out && sha256sum "Sudare-${GITHUB_REF_NAME}-setup.exe" > SHA256SUMS.txt)
+          cat out/SHA256SUMS.txt
+
+      # 本文は配布のページ（何か・入れ方・変わったこと）。README の写しにはしない。
+      # 変わったことは .github/release-notes/<タグ>.md があればそれ、無ければ
+      # feat / fix / perf のコミットの件名から作る。
+      - name: Compose release notes
+        run: |
+          version="${GITHUB_REF_NAME}"
+          prev=$(git describe --tags --abbrev=0 "${version}^" 2>/dev/null || true)
+          range="${version}"
+          [ -n "$prev" ] && range="${prev}..${version}"
+
+          if [ -f ".github/release-notes/${version}.md" ]; then
+            cp ".github/release-notes/${version}.md" changes.txt
+          else
+            git log --no-merges --pretty=format:'%s' "$range" > subjects.txt
+            sed -E -n 's/^feat(\(.+\))?!?: /- 追加: /p; s/^fix(\(.+\))?!?: /- 修正: /p; s/^perf(\(.+\))?!?: /- 改善: /p' subjects.txt > changes.txt
+          fi
+          [ -s changes.txt ] || echo "- 内部の変更のみ（使う人から見える変更はありません）" > changes.txt
+
+          awk -v ver="$version" '
+            /^<!--/ { skip = 1 }
+            skip { if (/-->/) skip = 0; next }
+            /^%CHANGES%$/ { while ((getline line < "changes.txt") > 0) print line; next }
+            { gsub(/%VERSION%/, ver); print }
+          ' .github/release-body.md > release-body.md
+
+          if [ -n "$prev" ]; then
+            printf '\n---\n\n全コミットの差分: https://github.com/%s/compare/%s...%s\n' "${GITHUB_REPOSITORY}" "$prev" "$version" >> release-body.md
+          fi
+          cat release-body.md
+
+      - name: Create release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            out/Sudare-${{ github.ref_name }}-setup.exe
+            out/SHA256SUMS.txt
+          body_path: release-body.md
